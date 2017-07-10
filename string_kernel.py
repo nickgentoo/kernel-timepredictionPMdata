@@ -43,7 +43,7 @@ def caching():
     return decorate_func
 
 
-class StringKernelSVM(svm.SVC):
+class StringKernelSVM():
     """
     Implementation of string kernel from article:
     H. Lodhi, C. Saunders, J. Shawe-Taylor, N. Cristianini, and C. Watkins.
@@ -60,8 +60,6 @@ class StringKernelSVM(svm.SVC):
         """
         self.lambda_decay = lambda_decay
         self.subseq_length = subseq_length
-        svm.SVC.__init__(self, kernel='precomputed')
-        self.impl="epsilon_svr"
 
     @caching()
     def _K(self, n, s, t):
@@ -233,31 +231,7 @@ class StringKernelSVM(svm.SVC):
         return gram_matrix
 
 
-    def fit(self, X, Y):
-        gram_matr = self.string_kernel(X, X)
-        self.__X = X
-        super(svm.SVC, self).fit(gram_matr, Y)
-
-
-    def predict(self, X):
-        svm_type = LIBSVM_IMPL.index(self.impl)
-        if not self.__X:
-            print('You should train the model first!!!')
-            sys.exit(3)
-        else:
-            gram_matr_predict_new = self.string_kernel(X, self.__X)
-            gram_matr_predict_new = np.asarray(gram_matr_predict_new, dtype=np.float64, order='C')
-            return libsvm.predict(
-                gram_matr_predict_new, self.support_, self.support_vectors_, self.n_support_,
-                self.dual_coef_, self._intercept_,
-                self._label, self.probA_, self.probB_,
-                svm_type=svm_type,
-                kernel=self.kernel, C=self.C, nu=self.nu,
-                probability=self.probability, degree=self.degree,
-                shrinking=self.shrinking, tol=self.tol, cache_size=self.cache_size,
-                coef0=self.coef0, gamma=self._gamma, epsilon=self.epsilon)
-
-
+#main di prova
 if __name__ == '__main__':
     cur_f = __file__.split('/')[-1]
     if len(sys.argv) != 3:
@@ -266,19 +240,12 @@ if __name__ == '__main__':
     else:
         subseq_length = int(sys.argv[1])
         lambda_decay = float(sys.argv[2])
+        kernel=StringKernelSVM(subseq_length,lambda_decay)
     #The dataset is the 20 newsgroups dataset. It will be automatically downloaded, then cached.
         t_start = time()
-        news = fetch_20newsgroups(subset='train')
-        X_train = ["efewfwerfrfrrwwr"]*10
-        Y_train = news.target[:10]
-        print('Data fetched in %.3f seconds' % (time() - t_start))
-
-        clf = StringKernelSVM(subseq_length=subseq_length, lambda_decay=lambda_decay)
+        X_train = ["efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr"]
         t_start = time()
-        clf.fit(X_train, Y_train)
-        print('Model trained in %.3f seconds' % (time() - t_start))
 
-        t_start = time()
-        result = clf.predict(["efbthtryhyrfrr"]*4)
-        print('New data predicted in %.3f seconds' % (time() - t_start))
-        print result
+        G=kernel.string_kernel(X_train,X_train)
+        print('Gram matrix computed in %.3f seconds' % (time() - t_start))
+        print G

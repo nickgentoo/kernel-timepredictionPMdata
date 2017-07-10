@@ -12,13 +12,12 @@ import sys
 if __name__ == '__main__':
     cur_f = __file__.split('/')[-1]
     if len(sys.argv) < 4:
-        print >> sys.stderr, 'usage: ' + cur_f + ' <maximal subsequence length> <lambda (decay)> <dataset> <C>'
+        print >> sys.stderr, 'usage: ' + cur_f + ' <maximal subsequence length> <lambda (decay)> <dataset> '
         sys.exit(1)
     else:
         subseq_length = int(sys.argv[1])
         lambda_decay = float(sys.argv[2])
         dataset=sys.argv[3]
-        C=float(sys.argv[4])
 
 kernel=StringKernel(subseq_length,lambda_decay)
 

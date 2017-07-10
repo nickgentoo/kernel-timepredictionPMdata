@@ -4,7 +4,7 @@ from sklearn.utils import shuffle
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import numpy as np
 from load_dataset_4stringkernels import load_dataset
-from string_kernel import StringKernel
+from string_kernel_nonorm import StringKernel
 from sklearn.model_selection import GridSearchCV
 
 import sys

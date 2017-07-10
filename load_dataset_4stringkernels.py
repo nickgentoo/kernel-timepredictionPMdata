@@ -2,13 +2,19 @@ import pandas
 from datetime import datetime
 import time
 import numpy as np
-from keras.preprocessing.text import one_hot
+#from keras.preprocessing.text import one_hot
 
 
 #the function returns a list of strings.
-def load_dataset_SIAV():
 
-    dataframe = pandas.read_csv("data/logSiav_last_anonimyzed.csv", header=0)
+def load_dataset(name):
+    if name=="SIAV":
+        return _load_dataset_name("data/logSiav_last_anonimyzed.csv")
+    elif name=="BPI12":
+        return _load_dataset_name("data/BPI_12_anonimyzed.csv")
+
+def _load_dataset_name(filename):
+    dataframe = pandas.read_csv(filename, header=0)
     dataframe = dataframe.replace(r's+', 'empty', regex=True)
     dataframe = dataframe.fillna(0)
     #print dataframe.dtypes
@@ -77,7 +83,7 @@ def load_dataset_SIAV():
             else:
                 caseID=case
                 for i in xrange(1,len(newdataset)): # +1 not adding last case. target is 0, not interesting. era 1
-                    data.append(newdataset[:i])
+                    data.append(''.join(newdataset[:i]))
                     #print newdataset[:i]
                 newdataset=[]
                 newdataset.append(event)
@@ -93,7 +99,7 @@ def load_dataset_SIAV():
 
         #last case
         for i in xrange(1, len(newdataset) ): #+ 1 not adding last event, target is 0 in that case. era 1
-            data.append(newdataset[:i])
+            data.append(''.join(newdataset[:i]))
             #print newdataset[:i]
         for i in range(n): # era n. rimosso esempio con singolo evento
             temptarget[-(i + 1)] = (finishtime - temptarget[-(i + 1)]).total_seconds()
@@ -110,8 +116,4 @@ def load_dataset_SIAV():
 
 
 
-
-
-
-(X_train, y_train),(X_test, y_test)= load_dataset_SIAV()
 

@@ -12,6 +12,7 @@ LIBSVM_IMPL = ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
 
 def caching():
     """
+    https://github.com/timshenkao/StringKernelSVM/blob/master/stringSVM.py
     Cache decorator. Arguments to the cached function must be hashable.
     """
     def decorate_func(func):
@@ -43,7 +44,7 @@ def caching():
     return decorate_func
 
 
-class StringKernelSVM():
+class StringKernel():
     """
     Implementation of string kernel from article:
     H. Lodhi, C. Saunders, J. Shawe-Taylor, N. Cristianini, and C. Watkins.
@@ -73,11 +74,14 @@ class StringKernelSVM():
         :type t: str
         :return: float value for similarity between s and t
         """
+
         if min(len(s), len(t)) < n:
             return 0
         else:
             part_sum = 0
-            for j in range(1, len(t)):
+            #for j in range(1, len(t)): Nick corretto bug?? perche da 1 ??
+            for j in range(0, len(t)):
+
                 if t[j] == s[-1]:
                     #not t[:j-1] as in the article but t[:j] because of Python slicing rules!!!
                     part_sum += self._K1(n - 1, s[:-1], t[:j])
@@ -130,8 +134,35 @@ class StringKernelSVM():
                 return self.lambda_decay * self._K2(n, s, t[:-1])
 
 
+    # def _gram_matrix_element(self, s, t, sdkvalue1, sdkvalue2):
+    #     """
+    #     Helper function
+    #     :param s: document #1
+    #     :type s: str
+    #     :param t: document #2
+    #     :type t: str
+    #     :param sdkvalue1: K(s,s) from the article
+    #     :type sdkvalue1: float
+    #     :param sdkvalue2: K(t,t) from the article
+    #     :type sdkvalue2: float
+    #     :return: value for the (i, j) element from Gram matrix
+    #     """
+    #     print s, t
+    #     print sdkvalue1,sdkvalue2
+    #     if s == t:
+    #         return 1
+    #     else:
+    #         try:
+    #             return self._K(self.subseq_length, s, t) / \
+    #                    (sdkvalue1 * sdkvalue2) ** 0.5
+    #         except ZeroDivisionError:
+    #             print("Maximal subsequence length is less or equal to documents' minimal length."
+    #                   "You should decrease it")
+    #             sys.exit(2)
+
     def _gram_matrix_element(self, s, t, sdkvalue1, sdkvalue2):
         """
+        NICK: non normalizzo
         Helper function
         :param s: document #1
         :type s: str
@@ -143,17 +174,20 @@ class StringKernelSVM():
         :type sdkvalue2: float
         :return: value for the (i, j) element from Gram matrix
         """
-        if s == t:
-            return 1
-        else:
-            try:
-                return self._K(self.subseq_length, s, t) / \
-                       (sdkvalue1 * sdkvalue2) ** 0.5
-            except ZeroDivisionError:
-                print("Maximal subsequence length is less or equal to documents' minimal length."
-                      "You should decrease it")
-                sys.exit(2)
-
+        #print s, t
+        # if s == t:
+        #     return 1
+        # else:
+        try:
+            a=0.0
+            for length in xrange(1,self.subseq_length+1):
+                a+=self._K(length, s, t)
+            #print a /(sdkvalue1 * sdkvalue2) ** 0.5
+            return a / (sdkvalue1 * sdkvalue2) ** 0.5
+        except ZeroDivisionError:
+            print("Maximal subsequence length is less or equal to documents' minimal length."
+                  "You should decrease it")
+            sys.exit(2)
 
     def string_kernel(self, X1, X2):
         """
@@ -173,7 +207,12 @@ class StringKernelSVM():
         if X1 == X2:
         #store K(s,s) values in dictionary to avoid recalculations
             for i in range(len_X1):
-                sim_docs_kernel_value[i] = self._K(self.subseq_length, X1[i], X1[i])
+                #print X1[i]
+                #sim_docs_kernel_value[i] =0.0
+                #for length in xrange(1, self.subseq_length + 1):
+                #    sim_docs_kernel_value[i] += self._K(length, X1[i], X1[i])
+
+                sim_docs_kernel_value[i] = self._gram_matrix_element(X1[i], X1[i], 1.0, 1.0) #self._K(self.subseq_length, X1[i], X1[i])
         #calculate Gram matrix
             for i in range(len_X1):
                 for j in range(i, len_X2):
@@ -187,9 +226,9 @@ class StringKernelSVM():
             sim_docs_kernel_value[2] = {}
         #store K(s,s) values in dictionary to avoid recalculations
             for i in range(len_X1):
-                sim_docs_kernel_value[1][i] = self._K(self.subseq_length, X1[i], X1[i])
+                sim_docs_kernel_value[1][i] = self._gram_matrix_element(X1[i], X1[i], 1.0, 1.0)
             for i in range(len_X2):
-                sim_docs_kernel_value[2][i] = self._K(self.subseq_length, X2[i], X2[i])
+                sim_docs_kernel_value[2][i] = self._gram_matrix_element(X2[i], X2[i], 1.0, 1.0)# self._K(self.subseq_length, X2[i], X2[i])
         #calculate Gram matrix
             for i in range(len_X1):
                 for j in range(i, len_X2):
@@ -204,9 +243,9 @@ class StringKernelSVM():
             min_dimens = min(len_X1, len_X2)
         #store K(s,s) values in dictionary to avoid recalculations
             for i in range(len_X1):
-                sim_docs_kernel_value[1][i] = self._K(self.subseq_length, X1[i], X1[i])
+                sim_docs_kernel_value[1][i] = self._gram_matrix_element(X1[i], X1[i], 1.0, 1.0)# self._K(self.subseq_length, X1[i], X1[i])
             for i in range(len_X2):
-                sim_docs_kernel_value[2][i] = self._K(self.subseq_length, X2[i], X2[i])
+                sim_docs_kernel_value[2][i] = self._gram_matrix_element(X2[i], X2[i], 1.0, 1.0)# self._K(self.subseq_length, X2[i], X2[i])
         #calculate Gram matrix for square part of rectangle matrix
             for i in range(min_dimens):
                 for j in range(i, min_dimens):
@@ -227,25 +266,25 @@ class StringKernelSVM():
                     for j in range(min_dimens, len_X2):
                         gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],
                                                                      sim_docs_kernel_value[2][j])
-        print sim_docs_kernel_value
+        #print sim_docs_kernel_value
         return gram_matrix
 
 
-#main di prova
-if __name__ == '__main__':
-    cur_f = __file__.split('/')[-1]
-    if len(sys.argv) != 3:
-        print >> sys.stderr, 'usage: ' + cur_f + ' <maximal subsequence length> <lambda (decay)>'
-        sys.exit(1)
-    else:
-        subseq_length = int(sys.argv[1])
-        lambda_decay = float(sys.argv[2])
-        kernel=StringKernelSVM(subseq_length,lambda_decay)
-    #The dataset is the 20 newsgroups dataset. It will be automatically downloaded, then cached.
-        t_start = time()
-        X_train = ["efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr"]
-        t_start = time()
-
-        G=kernel.string_kernel(X_train,X_train)
-        print('Gram matrix computed in %.3f seconds' % (time() - t_start))
-        print G
+# #main di prova
+# if __name__ == '__main__':
+#     cur_f = __file__.split('/')[-1]
+#     if len(sys.argv) != 3:
+#         print >> sys.stderr, 'usage: ' + cur_f + ' <maximal subsequence length> <lambda (decay)>'
+#         sys.exit(1)
+#     else:
+#         subseq_length = int(sys.argv[1])
+#         lambda_decay = float(sys.argv[2])
+#         kernel=StringKernelSVM(subseq_length,lambda_decay)
+#     #The dataset is the 20 newsgroups dataset. It will be automatically downloaded, then cached.
+#         t_start = time()
+#         X_train = ["efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr","efewfwerfrfrrwwr", "efe4f43f3rfwerfrfrrwwr"]
+#         t_start = time()
+#
+#         G=kernel.string_kernel(X_train,X_train)
+#         print('Gram matrix computed in %.3f seconds' % (time() - t_start))
+#         print G

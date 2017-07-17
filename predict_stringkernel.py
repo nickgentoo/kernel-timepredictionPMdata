@@ -37,8 +37,8 @@ kernel_train = kernel.string_kernel(X_train, X_train)
 kernel_test = kernel.string_kernel(X_test, X_train)
 print "Kernel computed"
 
-for C in  np.logspace(-12,10,num=23,base=10,dtype='float'):
-  for eps in [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.5,2.0,5.0,10.0,50.0,100.0]:
+for C in  np.logspace(-12,3,num=16,base=10,dtype='float'):
+  for eps in [0.00001,0.0001,0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]:
     svr=SVR(kernel='precomputed',C=C,epsilon=eps)
     svr.fit(kernel_train, y_train)
 

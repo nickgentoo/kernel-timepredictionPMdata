@@ -25,15 +25,20 @@ kernel=StringKernel(subseq_length,lambda_decay)
 
 #svr = GridSearchCV(SVR(kernel='precomputed'), cv=5, param_grid={"C": [1e-4,1e-3,1e-2,1e-1,1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9]}, scoring="neg_mean_squared_error")
 
-X_train= X_train[:10000]
-y_train= y_train[:10000]
+#X_train= X_train[:10000]
+#y_train= y_train[:10000]
+
+average=np.average(y_train)
+print "dividing target by", average
+y_train=y_train/average
+y_test=y_test/average
 
 kernel_train = kernel.string_kernel(X_train, X_train)
 kernel_test = kernel.string_kernel(X_test, X_train)
 print "Kernel computed"
 
 for C in  np.logspace(-12,10,num=23,base=10,dtype='float'):
-  for eps in [0.1,0.2,0.3,0.4,0.5,0.6]:
+  for eps in [0.001,0.01,0.1,0.2,0.3,0.4,0.5,0.6]:
     svr=SVR(kernel='precomputed',C=C,epsilon=eps)
     svr.fit(kernel_train, y_train)
 
@@ -55,4 +60,4 @@ for C in  np.logspace(-12,10,num=23,base=10,dtype='float'):
     y_pred = svr.predict(kernel_test)
     print "C: ", C, "epsilon:", eps
     #print (mean_squared_error(y_test, y_pred)/((24.0*3600)**2) )**0.5
-    print 'Rooted mean squared error: %0.3f MAE: %0.3f' % ( (mean_squared_error(y_test, y_pred)/((24.0*3600)**2) )**0.5, mean_absolute_error(y_test, y_pred)/(24.0*3600) )
+    print 'Rooted mean squared error: %0.3f MAE: %0.3f' % ( (mean_squared_error(y_test*average, y_pred*average)/((24.0*3600)**2) )**0.5, mean_absolute_error(y_test*average, y_pred*average)/(24.0*3600) )

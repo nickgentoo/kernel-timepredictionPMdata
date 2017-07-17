@@ -7,7 +7,6 @@ from time import time
 from functools import wraps
 
 
-LIBSVM_IMPL = ['c_svc', 'nu_svc', 'one_class', 'epsilon_svr', 'nu_svr']
 
 
 def caching():

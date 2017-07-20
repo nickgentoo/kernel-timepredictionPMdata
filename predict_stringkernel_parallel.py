@@ -36,6 +36,7 @@ y_train=y_train
 y_test=y_test
 
 kernel_train = kernel.string_kernel(X_train, X_train,8)
+print("computed kernel for training set")
 kernel_test = kernel.string_kernel(X_test, X_train,8)
 print "Kernel computed"
 

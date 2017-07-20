@@ -9,12 +9,23 @@ import multiprocessing
 import itertools
 
 
-def myapply(X1el, X2,ob):
+def myapply(X1el,i, X2,ob):
     len_X2 = len(X2)
     A = [0] * len_X2
+    leng=ob.subseq_length + 1
+    k11l=[0]*leng
+    k22=[0]*len_X2
+    for length in xrange(1, leng):
+        k11=ob._K(length, X1el, X1el)
+    for j in xrange(i,len_X2):
+        k22[j]=[0]*leng
+        for length in xrange(1, leng):
+            k22[j][length]=ob._K(length, X2[j], X2[j])
+
+
     #print "+++started computation of line", i
-    for j in xrange(len_X2):
-        A[j] = ob._gram_matrix_element_par(X1el, X2[j])
+    for j in xrange(i,len_X2):
+        A[j] = ob._gram_matrix_element_par(X1el, X2[j],k11l,k22[j])
     #print "---ended computation of line", i
 
     return A
@@ -179,7 +190,7 @@ class StringKernel():
         #print "K", s,t, "=",a
 
         return a
-    def _gram_matrix_element_par(self, s, t):
+    def _gram_matrix_element_par(self, s, t,k11l,k22l,):
         """
         NICK: non normalizzo
         Helper function
@@ -200,8 +211,8 @@ class StringKernel():
         a=0.0
 
         for length in xrange(1,self.subseq_length+1):
-            k1 = self._K(length, s, s)
-            k2 = self._K(length, t, t)
+            k1 = k11l[length] #self._K(length, s, s)
+            k2 = k22l[length] #self._K(length, t, t)
             if(k1* k2 > 0):
                 a+=self._K(length, s, t)/ (k1 * k2) ** 0.5
         #print a /(sdkvalue1 * sdkvalue2) ** 0.5
@@ -228,7 +239,7 @@ class StringKernel():
         if X1 == X2:
 
 
-            gram_matrix[:, :]=pool.map(myapply_star,itertools.izip([a for a in X1],itertools.repeat(X2),itertools.repeat(self)))
+            gram_matrix[:, :]=pool.map(myapply_star,itertools.izip([a for a in X1],[i for i in xrange(len_X1)],itertools.repeat(X2),itertools.repeat(self)))
                     #gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],  sim_docs_kernel_value[2][j])
             #using symmetry
             for i in range(len_X1):

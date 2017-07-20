@@ -13,7 +13,7 @@ def myapply(X1el, X2,ob):
     len_X2 = len(X2)
     A = [0] * len_X2
     #print "+++started computation of line", i
-    for j in xrange(i, len_X2):
+    for j in xrange(len_X2):
         A[j] = ob._gram_matrix_element_par(X1el, X2[j])
     #print "---ended computation of line", i
 
@@ -228,7 +228,7 @@ class StringKernel():
         if X1 == X2:
 
 
-            gram_matrix[:, :]=pool.map(myapply_star,itertools.izip((i  for i in X1),itertools.repeat(X2),itertools.repeat(self)))
+            gram_matrix[:, :]=pool.map(myapply_star,itertools.izip([a for a in X1],itertools.repeat(X2),itertools.repeat(self)))
                     #gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],  sim_docs_kernel_value[2][j])
             #using symmetry
             for i in range(len_X1):

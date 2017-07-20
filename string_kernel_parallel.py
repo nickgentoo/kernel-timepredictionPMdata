@@ -12,10 +12,10 @@ import itertools
 def myapply(i, X1, X2,ob):
     len_X2 = len(X2)
     A = [0] * len_X2
-    print "+++started computation of line", i
+    #print "+++started computation of line", i
     for j in range(i, len_X2):
         A[j - i] = ob._gram_matrix_element_par(X1[i], X2[j])
-    print "---ended computation of line", i
+    #print "---ended computation of line", i
 
     return A
 

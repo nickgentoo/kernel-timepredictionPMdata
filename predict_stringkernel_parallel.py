@@ -35,8 +35,8 @@ average=np.average(y_train)
 y_train=y_train
 y_test=y_test
 
-kernel_train = kernel.string_kernel(X_train, X_train,20)
-kernel_test = kernel.string_kernel(X_test, X_train,20)
+kernel_train = kernel.string_kernel(X_train, X_train,8)
+kernel_test = kernel.string_kernel(X_test, X_train,8)
 print "Kernel computed"
 
 for C in  np.logspace(-5,7,num=13,base=10,dtype='float'):

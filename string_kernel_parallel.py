@@ -9,22 +9,22 @@ import multiprocessing
 import itertools
 
 
-def myapply(i, X1, X2,ob):
+def myapply(X1el, X2,ob):
     len_X2 = len(X2)
     A = [0] * len_X2
     #print "+++started computation of line", i
     for j in xrange(i, len_X2):
-        A[j] = ob._gram_matrix_element_par(X1[i], X2[j])
+        A[j] = ob._gram_matrix_element_par(X1el, X2[j])
     #print "---ended computation of line", i
 
     return A
 
-def myapply_asymmetric(i, X1, X2,ob):
+def myapply_asymmetric(X1el, X2,ob):
     len_X2 = len(X2)
     A = [0] * len_X2
     #print "+++started computation of line", i
     for j in xrange(len_X2):
-        A[j] = ob._gram_matrix_element_par(X1[i], X2[j])
+        A[j] = ob._gram_matrix_element_par(X1el, X2[j])
     #print "---ended computation of line", i
 
     return A
@@ -37,38 +37,6 @@ def myapply_star_asymmetric(a_b):
     """Convert `f([1,2])` to `f(1,2)` call."""
     return myapply_asymmetric(*a_b)
 
-def caching():
-    """
-    https://github.com/timshenkao/StringKernelSVM/blob/master/stringSVM.py
-    Cache decorator. Arguments to the cached function must be hashable.
-    """
-    def decorate_func(func):
-        cache = dict()
-        # separating positional and keyword args
-        kwarg_point = object()
-
-        @wraps(func)
-        def cache_value(*args, **kwargs):
-            key = args
-            if kwargs:
-                key += (kwarg_point,) + tuple(sorted(kwargs.items()))
-            if key in cache:
-                result = cache[key]
-            else:
-                result = func(*args, **kwargs)
-                cache[key] = result
-            return result
-
-        def cache_clear():
-            """
-            Clear the cache
-            """
-            cache.clear()
-
-        # Clear the cache
-        cache_value.cache_clear = cache_clear
-        return cache_value
-    return decorate_func
 
 
 class StringKernel():
@@ -89,7 +57,6 @@ class StringKernel():
         self.lambda_decay = lambda_decay
         self.subseq_length = subseq_length
 
-    @caching()
     def _K(self, n, s, t):
         """
         K_n(s,t) in the original article; recursive function
@@ -116,7 +83,6 @@ class StringKernel():
             return result
 
 
-    @caching()
     def _K1(self, n, s, t):
         """
         K'_n(s,t) in the original article; auxiliary intermediate function; recursive function
@@ -137,7 +103,6 @@ class StringKernel():
             return result
 
 
-    @caching()
     def _K2(self, n, s, t):
         """
         K''_n(s,t) in the original article; auxiliary intermediate function; recursive function
@@ -261,25 +226,12 @@ class StringKernel():
         pool = multiprocessing.Pool(processes=n)
         #when lists of documents are identical
         if X1 == X2:
-          #store K(s,s) values in dictionary to avoid recalculations
-          for i in range(len_X1):
-              sim_docs_kernel_value[i] = {}  #print X1[i]
-              for length in xrange(1, self.subseq_length + 1):
-                  #sim_docs_kernel_value[i] =0.0
-                #for length in xrange(1, self.subseq_length + 1):
-                #    sim_docs_kernel_value[i] += self._K(length, X1[i], X1[i])
 
-                sim_docs_kernel_value[i][length] = self._K(length, X1[i], X1[i])
-                #print length, sim_docs_kernel_value[i][length]
 
-                  #calculate Gram matrix
-          #for i in range(len_X1):
-              #we know len_X2
-
-        gram_matrix[:, :]=pool.map(myapply_star,itertools.izip((i  for i in xrange(len_X1)),itertools.repeat(X1),itertools.repeat(X2),itertools.repeat(self)))
+            gram_matrix[:, :]=pool.map(myapply_star,itertools.izip((i  for i in X1),itertools.repeat(X2),itertools.repeat(self)))
                     #gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],  sim_docs_kernel_value[2][j])
-          #using symmetry
-        for i in range(len_X1):
+            #using symmetry
+            for i in range(len_X1):
               for j in range(i, len_X2):
                     gram_matrix[j, i] = gram_matrix[i, j]
 
@@ -291,8 +243,7 @@ class StringKernel():
         #when lists of documents are neither identical nor of the same length
         else:
 
-            gram_matrix[:, :] = pool.map(myapply_star_asymmetric, itertools.izip((i for i in range(len_X1)), itertools.repeat(X1),
-                                                                      itertools.repeat(X2), itertools.repeat(self)))
+            gram_matrix[:, :] = pool.map(myapply_star_asymmetric, itertools.izip((i for i in X1), itertools.repeat(X2), itertools.repeat(self)))
             # gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],  sim_docs_kernel_value[2][j])
             # using symmetry
 

@@ -33,9 +33,20 @@ def myapply(X1el,i, X2,ob):
 def myapply_asymmetric(X1el, X2,ob):
     len_X2 = len(X2)
     A = [0] * len_X2
-    #print "+++started computation of line", i
+    leng=ob.subseq_length + 1
+    k11l=[0]*leng
+    k22=[0]*len_X2
+    for length in xrange(1, leng):
+        k11=ob._K(length, X1el, X1el)
     for j in xrange(len_X2):
-        A[j] = ob._gram_matrix_element_par(X1el, X2[j])
+        k22[j]=[0]*leng
+        for length in xrange(1, leng):
+            k22[j][length]=ob._K(length, X2[j], X2[j])
+
+
+    #print "+++started computation of line", i
+    for j in xrange(i,len_X2):
+        A[j] = ob._gram_matrix_element_par(X1el, X2[j],k11l,k22[j])
     #print "---ended computation of line", i
 
     return A

@@ -6,7 +6,7 @@ import numpy as np
 from load_dataset_4stringkernels import load_dataset
 from string_kernel import StringKernel
 from sklearn.model_selection import GridSearchCV
-
+from sklearn.gaussian_process import GaussianProcessRegressor
 import sys
 
 if __name__ == '__main__':
@@ -29,17 +29,17 @@ kernel=StringKernel(subseq_length,lambda_decay)
 #y_train= y_train[:10000]
 
 average=np.average(y_train)
-print "dividing target by", average
-y_train=y_train/average
-y_test=y_test/average
+#print "dividing target by", average
+y_train=y_train
+y_test=y_test
 
 kernel_train = kernel.string_kernel(X_train, X_train)
 kernel_test = kernel.string_kernel(X_test, X_train)
 print "Kernel computed"
 
-for C in  np.logspace(-12,3,num=16,base=10,dtype='float'):
-  for eps in [0.00001,0.0001,0.001,0.005,0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]:
-    svr=SVR(kernel='precomputed',C=C,epsilon=eps)
+for C in  np.logspace(-5,7,num=13,base=10,dtype='float'):
+    #for eps in [0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]:
+    svr=SVR(kernel='precomputed',C=C) #epsilon=eps
     svr.fit(kernel_train, y_train)
 
     #
@@ -58,6 +58,6 @@ for C in  np.logspace(-12,3,num=16,base=10,dtype='float'):
     print "Kernel computed and model trained"
     #kernel_test = np.dot(X_test, X_train[svc.support_, :].T)
     y_pred = svr.predict(kernel_test)
-    print "C: ", C, "epsilon:", eps
+    print "C: ", C #, "epsilon:", eps
     #print (mean_squared_error(y_test, y_pred)/((24.0*3600)**2) )**0.5
-    print 'Rooted mean squared error: %0.3f MAE: %0.3f' % ( (mean_squared_error(y_test*average, y_pred*average)/((24.0*3600)**2) )**0.5, mean_absolute_error(y_test*average, y_pred*average)/(24.0*3600) )
+    print 'Rooted mean squared error: %0.3f MAE: %0.3f' % ( (mean_squared_error(y_test, y_pred)/((24.0*3600)**2) )**0.5, mean_absolute_error(y_test, y_pred)/(24.0*3600) )

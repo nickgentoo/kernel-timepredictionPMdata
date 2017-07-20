@@ -177,16 +177,15 @@ class StringKernel():
         # if s == t:
         #     return 1
         # else:
-        try:
-            a=0.0
-            for length in xrange(1,self.subseq_length+1):
-                a+=self._K(length, s, t)
-            #print a /(sdkvalue1 * sdkvalue2) ** 0.5
-            return a / (sdkvalue1 * sdkvalue2) ** 0.5
-        except ZeroDivisionError:
-            print("Maximal subsequence length is less or equal to documents' minimal length."
-                  "You should decrease it")
-            sys.exit(2)
+        a=0.0
+        for length in xrange(1,self.subseq_length+1):
+            if(sdkvalue1[length]* sdkvalue2[length] > 0):
+                a+=self._K(length, s, t)/ (sdkvalue1[length] * sdkvalue2[length]) ** 0.5
+        #print a /(sdkvalue1 * sdkvalue2) ** 0.5
+            #else:
+        #print "K", s,t, "=",a
+
+        return a
 
     def string_kernel(self, X1, X2):
         """
@@ -204,37 +203,26 @@ class StringKernel():
         sim_docs_kernel_value = {}
         #when lists of documents are identical
         if X1 == X2:
-        #store K(s,s) values in dictionary to avoid recalculations
-            for i in range(len_X1):
-                #print X1[i]
-                #sim_docs_kernel_value[i] =0.0
+          #store K(s,s) values in dictionary to avoid recalculations
+          for i in range(len_X1):
+              sim_docs_kernel_value[i] = {}  #print X1[i]
+              for length in xrange(1, self.subseq_length + 1):
+                  #sim_docs_kernel_value[i] =0.0
                 #for length in xrange(1, self.subseq_length + 1):
                 #    sim_docs_kernel_value[i] += self._K(length, X1[i], X1[i])
 
-                sim_docs_kernel_value[i] = self._gram_matrix_element(X1[i], X1[i], 1.0, 1.0) #self._K(self.subseq_length, X1[i], X1[i])
-        #calculate Gram matrix
-            for i in range(len_X1):
-                for j in range(i, len_X2):
+                sim_docs_kernel_value[i][length] = self._K(length, X1[i], X1[i])
+                #print length, sim_docs_kernel_value[i][length]
+
+                  #calculate Gram matrix
+          for i in range(len_X1):
+            for j in range(i, len_X2):
+
                     gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[i],
                                                                  sim_docs_kernel_value[j])
         #using symmetry
                     gram_matrix[j, i] = gram_matrix[i, j]
-        #when lists of documents are not identical but of the same length
-        elif len_X1 == len_X2:
-            sim_docs_kernel_value[1] = {}
-            sim_docs_kernel_value[2] = {}
-        #store K(s,s) values in dictionary to avoid recalculations
-            for i in range(len_X1):
-                sim_docs_kernel_value[1][i] = self._gram_matrix_element(X1[i], X1[i], 1.0, 1.0)
-            for i in range(len_X2):
-                sim_docs_kernel_value[2][i] = self._gram_matrix_element(X2[i], X2[i], 1.0, 1.0)# self._K(self.subseq_length, X2[i], X2[i])
-        #calculate Gram matrix
-            for i in range(len_X1):
-                for j in range(i, len_X2):
-                    gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],
-                                                                 sim_docs_kernel_value[2][j])
-        #using symmetry
-                    gram_matrix[j, i] = gram_matrix[i, j]
+
         #when lists of documents are neither identical nor of the same length
         else:
             sim_docs_kernel_value[1] = {}
@@ -242,9 +230,14 @@ class StringKernel():
             min_dimens = min(len_X1, len_X2)
         #store K(s,s) values in dictionary to avoid recalculations
             for i in range(len_X1):
-                sim_docs_kernel_value[1][i] = self._gram_matrix_element(X1[i], X1[i], 1.0, 1.0)# self._K(self.subseq_length, X1[i], X1[i])
+                sim_docs_kernel_value[1][i]={}
+                for length in xrange(1, self.subseq_length + 1):
+
+                    sim_docs_kernel_value[1][i][length] = self._K(length, X1[i], X1[i])# self._K(self.subseq_length, X1[i], X1[i])
             for i in range(len_X2):
-                sim_docs_kernel_value[2][i] = self._gram_matrix_element(X2[i], X2[i], 1.0, 1.0)# self._K(self.subseq_length, X2[i], X2[i])
+                sim_docs_kernel_value[2][i] = {}
+                for length in xrange(1, self.subseq_length + 1):
+                    sim_docs_kernel_value[2][i][length] = self._K(length, X2[i], X2[i])# self._K(self.subseq_length, X2[i], X2[i])
         #calculate Gram matrix for square part of rectangle matrix
             for i in range(min_dimens):
                 for j in range(i, min_dimens):

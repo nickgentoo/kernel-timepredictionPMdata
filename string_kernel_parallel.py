@@ -13,8 +13,18 @@ def myapply(i, X1, X2,ob):
     len_X2 = len(X2)
     A = [0] * len_X2
     #print "+++started computation of line", i
-    for j in range(i, len_X2):
-        A[j - i] = ob._gram_matrix_element_par(X1[i], X2[j])
+    for j in xrange(i, len_X2):
+        A[j] = ob._gram_matrix_element_par(X1[i], X2[j])
+    #print "---ended computation of line", i
+
+    return A
+
+def myapply_asymmetric(i, X1, X2,ob):
+    len_X2 = len(X2)
+    A = [0] * len_X2
+    #print "+++started computation of line", i
+    for j in xrange(len_X2):
+        A[j] = ob._gram_matrix_element_par(X1[i], X2[j])
     #print "---ended computation of line", i
 
     return A
@@ -22,6 +32,10 @@ def myapply(i, X1, X2,ob):
 def myapply_star(a_b):
     """Convert `f([1,2])` to `f(1,2)` call."""
     return myapply(*a_b)
+
+def myapply_star_asymmetric(a_b):
+    """Convert `f([1,2])` to `f(1,2)` call."""
+    return myapply_asymmetric(*a_b)
 
 def caching():
     """
@@ -262,7 +276,7 @@ class StringKernel():
           #for i in range(len_X1):
               #we know len_X2
 
-        gram_matrix[:, :]=pool.map(myapply_star,itertools.izip((i  for i in range(len_X1)),itertools.repeat(X1),itertools.repeat(X2),itertools.repeat(self)))
+        gram_matrix[:, :]=pool.map(myapply_star,itertools.izip((i  for i in xrange(len_X1)),itertools.repeat(X1),itertools.repeat(X2),itertools.repeat(self)))
                     #gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],  sim_docs_kernel_value[2][j])
           #using symmetry
         for i in range(len_X1):
@@ -277,13 +291,10 @@ class StringKernel():
         #when lists of documents are neither identical nor of the same length
         else:
 
-            gram_matrix[:, :] = pool.map(myapply_star, itertools.izip((i for i in range(len_X1)), itertools.repeat(X1),
+            gram_matrix[:, :] = pool.map(myapply_star_asymmetric, itertools.izip((i for i in range(len_X1)), itertools.repeat(X1),
                                                                       itertools.repeat(X2), itertools.repeat(self)))
             # gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],  sim_docs_kernel_value[2][j])
             # using symmetry
-            for i in range(len_X1):
-                for j in range(i, len_X2):
-                    gram_matrix[j, i] = gram_matrix[i, j]
 
         return gram_matrix
 

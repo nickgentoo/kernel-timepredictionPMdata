@@ -38,7 +38,7 @@ def myapply_asymmetric(X1el, X2,ob):
     k22=[0]*len_X2
     for length in xrange(1, leng):
         k11l[length]=ob._K(length, X1el, X1el)
-    for j in xrangelen_X2):
+    for j in xrange(len_X2):
         k22[j]=[0]*leng
         for length in xrange(1, leng):
             k22[j][length]=ob._K(length, X2[j], X2[j])

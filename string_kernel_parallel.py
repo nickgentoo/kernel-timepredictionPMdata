@@ -16,8 +16,8 @@ def myapply(X1el,i, X2,ob):
     k11l=[0]*leng
     k22=[0]*len_X2
     for length in xrange(1, leng):
-        k11=ob._K(length, X1el, X1el)
-    for j in xrange(i,len_X2):
+        k11l[length]=ob._K(length, X1el, X1el)
+    for j in xrange(len_X2):
         k22[j]=[0]*leng
         for length in xrange(1, leng):
             k22[j][length]=ob._K(length, X2[j], X2[j])
@@ -37,15 +37,15 @@ def myapply_asymmetric(X1el, X2,ob):
     k11l=[0]*leng
     k22=[0]*len_X2
     for length in xrange(1, leng):
-        k11=ob._K(length, X1el, X1el)
-    for j in xrange(len_X2):
+        k11l[length]=ob._K(length, X1el, X1el)
+    for j in xrangelen_X2):
         k22[j]=[0]*leng
         for length in xrange(1, leng):
             k22[j][length]=ob._K(length, X2[j], X2[j])
 
 
     #print "+++started computation of line", i
-    for j in xrange(i,len_X2):
+    for j in xrange(len_X2):
         A[j] = ob._gram_matrix_element_par(X1el, X2[j],k11l,k22[j])
     #print "---ended computation of line", i
 
@@ -265,7 +265,7 @@ class StringKernel():
         #when lists of documents are neither identical nor of the same length
         else:
 
-            gram_matrix[:, :] = pool.map(myapply_star_asymmetric, itertools.izip((i for i in X1), itertools.repeat(X2), itertools.repeat(self)))
+            gram_matrix[:, :] = pool.map(myapply_star_asymmetric, itertools.izip([a for a in X1], itertools.repeat(X2), itertools.repeat(self)))
             # gram_matrix[i, j] = self._gram_matrix_element(X1[i], X2[j], sim_docs_kernel_value[1][i],  sim_docs_kernel_value[2][j])
             # using symmetry
 
